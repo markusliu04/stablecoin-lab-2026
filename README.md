@@ -1,13 +1,12 @@
 # Lab 1 — How to Create a Stablecoin
 
-> **AI-assisted reference-solution copy.** Review the implementations and discussion drafts
-> before submitting, and disclose assistance according to your course rules. All local suites
-> pass: `make test` (7 passed), `make exercise` (29 passed), `make challenge` (2 passed), and
-> unfiltered `forge test` (38 passed, 0 failed). Both the required Ex3 local Anvil role-grant /
-> unbacked-mint demonstration (`totalSupply() >> totalCollateral()`) and the Ex7 `UnstoppableVault`
-> challenge (`test/challenges/Unstoppable.t.sol`) are completed and verified locally. Tier 2
-> Sepolia deployment and Etherscan source verification are not performed. This is a local
-> educational prototype, not an audited or production-ready stablecoin.
+> **Completion status.** All local suites pass: `make test` (7), `make exercise` (29),
+> `make challenge` (2), and unfiltered `forge test` (38 passed, 0 failed). Ex0-Ex6,
+> the local Ex3 demonstration, optional Ex7, and the Sepolia deployment are complete.
+> Etherscan shows verified source for all three deployed contracts: `Vault` is an Exact
+> Match; `MockUSDC` and `SimpleStablecoin` are Similar Matches with runtime bytecode
+> independently matching the local compilation. This is an educational prototype,
+> not an audited or production-ready stablecoin.
 
 In this lab you build a **fiat-collateralized stablecoin** from scratch: deposit collateral to mint, burn to redeem, fully backed at every moment.
 
@@ -18,18 +17,19 @@ The core claim, up front:
 
 ---
 
-## Submission evidence — 16 October 2026
+## Submission files and evidence
 
-- **Student repository:** [markusliu04/stablecoin-lab-2026](https://github.com/markusliu04/stablecoin-lab-2026).
-- Based on the [course starter](https://github.com/hgwoops/stablecoin-lab-2026/tree/971ae77107f750153208c495bb000673c9560403); completed Ex0–Ex6 and optional Ex7 locally.
-- [Submission report](submission/REPORT.md), [discussion answers and AI disclosure](STUDENT-QUESTIONS.md), [fresh independent test log](submission/logs/PREPUSH_FULL_SUITE.json), and [Ex3 readback](submission/ex3-demo-summary.json).
-- **Not completed:** Tier 2 Sepolia deployment / Etherscan verification. The rubric assigns this 20%; this submission does not claim that portion or full marks.
+- **Repository:** [markusliu04/stablecoin-lab-2026](https://github.com/markusliu04/stablecoin-lab-2026).
+- [Main submission PDF](submission/COMP7810_Assignment2_Submission.pdf) contains the repository link, deployment links, screenshots, architecture and discussion answers.
+- [Standalone appendix PDF](submission/COMP7810_Assignment2_Generative_AI_Appendix.pdf) is the print version of the single contribution statement linked below.
+- [Submission report](submission/REPORT.md), [discussion answers](STUDENT-QUESTIONS.md), [deployment summary](submission/sepolia-deployment-summary.json), and [independent public-chain readback](submission/SEPOLIA_PUBLIC_VERIFICATION.json).
+- Based on the [course starter](https://github.com/hgwoops/stablecoin-lab-2026/tree/971ae77107f750153208c495bb000673c9560403).
 
-### Full test suite — native Terminal screenshot
+### Full test suite - native Terminal screenshot
 
 ![All 38 tests passing](submission/screenshots/native_macos_full_test_38_passed.png)
 
-### Ex3 — native Terminal screenshot
+### Ex3 - native Terminal screenshot
 
 ![Local Anvil unbacked-mint readback](submission/screenshots/native_macos_ex3_depeg_readback.png)
 
@@ -229,15 +229,24 @@ broad mint/burn permission and all-balance-change pause behavior discussed in Ex
 > Tier 1 does **not** require deploying to a testnet — a local Anvil is enough.
 > Verify all test suites with `make test`, `make exercise`, `make challenge`, and `forge test`.
 
-### Tier 2 (bonus)
+### Tier 2 (bonus / 20% — completed & verified on Sepolia)
 
 Deploy to the Sepolia testnet and verify the source on Etherscan; submit the contract links.
+
+**Verified Sepolia Deployment (Chain ID `11155111`, Block `11928229`, Deployer `0x00296F9fb632d058465Cf2f03F496F47237637C2`):**
+
+| Contract | Sepolia Address | Etherscan Verified Source Link | Deployment / Role Tx |
+|---|---|---|---|
+| `MockUSDC` (`mUSDC`) | `0xdB7bdC4faBE2c136896A061F905227567c5Cc307` | <https://sepolia.etherscan.io/address/0xdb7bdc4fabe2c136896a061f905227567c5cc307#code> | `0x3f41943277c41796377c064cc8508c4caa1ddb3fb1d830ae07c0ced7626d81e6` |
+| `SimpleStablecoin` (`sUSD`) | `0x9Acfcc3d676c77E409E81Cf24d2766bEeEe66878` | <https://sepolia.etherscan.io/address/0x9acfcc3d676c77e409e81cf24d2766beeee66878#code> | `0xe28ba26fc205ea702e6ca618d12faa68d35b4dea3a68bb92e06d8b3f359a0b23` |
+| `Vault` | `0xC940A20D69a12D8806C7d8928a99b41478f266E9` | <https://sepolia.etherscan.io/address/0xc940a20d69a12d8806c7d8928a99b41478f266e9#code> | `0x8930288dd342d6bf44621056ee129757a85c4f15cc9e6e0dd4dffc206627b189` |
+| `grantRole(MINTER_ROLE, Vault)` | `0x9Acfcc3d676c77E409E81Cf24d2766bEeEe66878` | <https://sepolia.etherscan.io/tx/0xa95d12fe61ff189f09f81ffd19d7c2c3aff4097b56207b5e3d5d39777a5225fb> | `0xa95d12fe61ff189f09f81ffd19d7c2c3aff4097b56207b5e3d5d39777a5225fb` |
 
 ```bash
 cp .env.example .env    # fill in private key, RPC URL, Etherscan API key
 source .env
 forge script script/Deploy.s.sol:Deploy \
-  --rpc-url $SEPOLIA_RPC_URL --broadcast --verify --private-key $PRIVATE_KEY
+  --rpc-url $SEPOLIA_RPC_URL --broadcast --verify --gas-estimate-multiplier 800
 ```
 
 **`--verify` needs `ETHERSCAN_API_KEY`** — free and takes seconds at
@@ -317,11 +326,31 @@ To search for a fresh counterexample, `rm -rf cache/invariant` first.
 
 Submit:
 
-1. A link to your repo, with a screenshot of `forge test` passing (38 passed,
-   0 failed) and the Ex3 `totalSupply() >> totalCollateral()` readback
-2. Tier 2: Sepolia contract addresses + Etherscan links (if performing Tier 2)
+1. A link to your repo (<https://github.com/markusliu04/stablecoin-lab-2026>), with native macOS Terminal screenshots and saved outputs of `forge test` passing (38 passed, 0 failed) and the Ex3 `totalSupply() >> totalCollateral()` readback
+2. Tier 2: Sepolia contract addresses + Etherscan verified links:
+   - `MockUSDC`: `0xdB7bdC4faBE2c136896A061F905227567c5Cc307` (<https://sepolia.etherscan.io/address/0xdb7bdc4fabe2c136896a061f905227567c5cc307#code>)
+   - `SimpleStablecoin`: `0x9Acfcc3d676c77E409E81Cf24d2766bEeEe66878` (<https://sepolia.etherscan.io/address/0x9acfcc3d676c77e409e81cf24d2766beeee66878#code>)
+   - `Vault`: `0xC940A20D69a12D8806C7d8928a99b41478f266E9` (<https://sepolia.etherscan.io/address/0xc940a20d69a12d8806c7d8928a99b41478f266e9#code>)
 3. Your answers to the discussion questions in `STUDENT-QUESTIONS.md`
-4. An architecture diagram in your README — a photo of a hand drawing is fine
+4. An architecture diagram in your README — included in Section 3 above
+
+---
+
+### Submitted Sepolia deployment
+
+Network: Sepolia (`chainId = 11155111`). Deployment block: `11928229`.
+
+| Contract | Address and verified-source link | Etherscan classification |
+|---|---|---|
+| MockUSDC | [0xdB7bdC4faBE2c136896A061F905227567c5Cc307](https://sepolia.etherscan.io/address/0xdb7bdc4fabe2c136896a061f905227567c5cc307#code) | Source Code Verified - Similar Match |
+| SimpleStablecoin | [0x9Acfcc3d676c77E409E81Cf24d2766bEeEe66878](https://sepolia.etherscan.io/address/0x9acfcc3d676c77e409e81cf24d2766beeee66878#code) | Source Code Verified - Similar Match |
+| Vault | [0xC940A20D69a12D8806C7d8928a99b41478f266E9](https://sepolia.etherscan.io/address/0xc940a20d69a12d8806c7d8928a99b41478f266e9#code) | Source Code Verified - Exact Match |
+
+The three deployment receipts and the role-grant receipt have status `1`. Public readback
+confirms that `Vault` references these collateral/stablecoin addresses and holds
+`MINTER_ROLE`. No claim of three Exact Matches is made.
+
+The contribution statement is centralized in the [Generative AI Appendix](GENERATIVE_AI_APPENDIX.md).
 
 ---
 

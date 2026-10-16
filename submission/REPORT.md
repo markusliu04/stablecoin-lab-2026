@@ -1,46 +1,33 @@
-# COMP7810 Lab 1 — Submission report
+# COMP7810 Assignment 2 - Stablecoin Lab 1
 
-Date: 16 October 2026. Repository: [markusliu04/stablecoin-lab-2026](https://github.com/markusliu04/stablecoin-lab-2026).
+Repository: [markusliu04/stablecoin-lab-2026](https://github.com/markusliu04/stablecoin-lab-2026).
 
-## Scope and attribution
+## Submission contents
 
-Completed the required local Ex0–Ex6 and optional Ex7 on an isolated Anvil/Foundry teaching fixture. AI assistance was used; the [discussion answers](../STUDENT-QUESTIONS.md) retain the disclosure. Review and responsibility remain with the student. This is not a production or audited stablecoin.
+The [main PDF](COMP7810_Assignment2_Submission.pdf) contains the repository link, test and Ex3 screenshots, deployment addresses and verification links, architecture diagram, and discussion questions/answers. The [standalone appendix](COMP7810_Assignment2_Generative_AI_Appendix.pdf) centralizes the contribution statement; it is not repeated before each answer.
 
-**Tier 2 Sepolia deployment and Etherscan verification were not performed.** Although described as bonus in the course material, the rubric assigns it 20%; no claim of completing that component or earning full marks is made.
+## Local implementation and evidence
 
-## Implemented code
+Required Ex0-Ex6 and optional Ex7 are completed. `make test`, `make exercise` and `make challenge` cover 7, 29 and 2 tests respectively. Unfiltered `forge test` passes all 38 tests across 6 suites, including the invariant run. See the [native screenshot](screenshots/native_macos_full_test_38_passed.png), [original independent publishing run](logs/PUBLISH_CHECKOUT_FULL_SUITE.json), and the [final refresh full-suite log](logs/FINAL_FULL_SUITE.json).
 
-- [OverCollateralizedVault](../src/exercises/OverCollateralizedVault.sol): collateral value / decimals conversion, collateral ratio checks, debt handling and capped liquidation bonus.
-- [Loop and permission tests](../test/exercises/01_LoopTasks.t.sol): Ex2 decimals and Ex4 authorization / pausing cases.
-- [Invariant handler and invariants](../test/exercises/02_InvariantTasks.t.sol): Ex6 redeem handler and collateral/debt checks.
-- [Additional edge tests](../test/exercises/04_OverCollateralEdgeCases.t.sol).
-- [Ex7 test_unstoppable](../test/challenges/Unstoppable.t.sol): direct donation via `token.transfer(address(vault), INITIAL_PLAYER_TOKEN_BALANCE);`; setup, monitor and solved checks preserved.
+Ex3 was performed only on disposable local Anvil. Before the role grant, the mint attempt was rejected during gas estimation (not a mined failed transaction). After a local admin role grant and direct mint, supply was `1001000000000`, collateral `1000000000`, and attacker balance `1000000000000`. See the [summary](ex3-demo-summary.json) and [native screenshot](screenshots/native_macos_ex3_depeg_readback.png). MockUSDC is a test token; this readback does not establish a real dollar market price.
 
-## Observed verification
+## Sepolia deployment and source verification
 
-Foundry 1.8.4; solc 0.8.24; OpenZeppelin 5.0.2. All dependencies are vendored in the repository.
+Chain ID: `11155111`. Deployment block: `11928229`. All three deployment receipts and the role-grant receipt have status `1`. [Independent public-chain readback](SEPOLIA_PUBLIC_VERIFICATION.json) confirms nonempty deployed code, the vault's collateral/stable references and the vault's `MINTER_ROLE`.
 
-| Scope | Observed result | Evidence |
+| Contract | Source verification link | Exact classification |
 |---|---|---|
-| Fresh independent unfiltered `forge test -vv --fuzz-seed 0x330377eebfe9f24b10d1259f4370f0f8ade6823f20ba30baacca9be4ac0f33b8` | 6 suites; **38 passed, 0 failed, 0 skipped; exit 0** | [Literal output](logs/PREPUSH_FULL_SUITE.json), [native screenshot](screenshots/native_macos_full_test_38_passed.png) |
-| Historical pristine baseline, non-challenge suite | 7 passed, 18 failed; exit 1 | [Baseline log](logs/BASELINE_MATCHED.json) |
-| Completed non-challenge suite | 36 passed, 0 failed; exit 0 | [Modified log](logs/MODIFIED_MATCHED.json) |
-| Rollback, same non-challenge command/input | 7 passed, 18 failed; exit 1; restored tree hash equals original | [Rollback log](logs/ROLLBACK_MATCHED.json) |
+| MockUSDC | [0xdB7bdC4faBE2c136896A061F905227567c5Cc307](https://sepolia.etherscan.io/address/0xdb7bdc4fabe2c136896a061f905227567c5cc307#code) | Source Code Verified - Similar Match |
+| SimpleStablecoin | [0x9Acfcc3d676c77E409E81Cf24d2766bEeEe66878](https://sepolia.etherscan.io/address/0x9acfcc3d676c77e409e81cf24d2766beeee66878#code) | Source Code Verified - Similar Match |
+| Vault | [0xC940A20D69a12D8806C7d8928a99b41478f266E9](https://sepolia.etherscan.io/address/0xc940a20d69a12d8806c7d8928a99b41478f266e9#code) | Source Code Verified - Exact Match |
 
-The independent publishing checkout was also compiled from scratch and passed the same 38 tests with exit 0 ([literal output](logs/PUBLISH_CHECKOUT_FULL_SUITE.json)).
+The first two runtime bytecodes match the local compilation exactly. Similar Match is not relabeled as Exact Match. The project is an educational prototype, not production-ready or audited.
 
-The core / exercises / challenge counts are 7 / 29 / 2. Saved historical logs are not represented as fresh reruns. Exported logs normalize the local working directory and omit environment PATH details; literal stdout, stderr and exit status are retained. Full canonical rollback artifacts remain in the local audit bundle, rather than adding a redundant baseline archive to this source repository.
+## Written work and architecture
 
-## Ex3 local role-compromise simulation
+[Questions and answers](../STUDENT-QUESTIONS.md); [README with architecture and deployment table](../README.md); [rendered architecture](screenshots/architecture_diagram.png). The course starter is retained as the comparison baseline; the code changes implement Ex5 vault operations, Ex6 handler/invariants, Ex2/Ex4 tests and the optional Ex7 test.
 
-Chain ID 31337; disposable local Anvil only. No public-chain or third-party attack was performed. The private keys present in original teaching commands are the publicly known Anvil test keys and must never hold real funds.
+## Delivery notes
 
-1. Honest deposit: supply and collateral both `1000000000` raw units (1,000 tokens each).
-2. [Unauthorized mint](logs/EX3_STEP1_UNAUTHORIZED_MINT.json): rejected with `AccessControlUnauthorizedAccount` during gas estimation, exit 1. This was **not** a mined failed transaction. Balances remained unchanged.
-3. [Admin role grant](logs/EX3_STEP2_GRANT_MINTER_ROLE.json): successful local transaction.
-4. [Unbacked mint](logs/EX3_STEP3_AUTHORIZED_MINT.json): successful local transaction.
-5. [Summary and readbacks](ex3-demo-summary.json): supply `1001000000000`, collateral `1000000000`, attacker balance `1000000000000`.
-
-Only about 0.000999 units of MockUSDC now back each sUSD by quantity. MockUSDC has no real reserve value: this does not measure a dollar market price. Granting `MINTER_ROLE` permits minting outside the reserve vault, breaking the quantity-backing invariant.
-
-[Native Ex3 screenshot](screenshots/native_macos_ex3_depeg_readback.png). The [README](../README.md) contains both Mermaid architecture diagrams and the [rendered diagram](screenshots/architecture_diagram.png).
+Moodle accepts file uploads. Upload the main PDF and the separate appendix PDF; the source ZIP is an optional backup, not an extra handout requirement. The lab handout does not prescribe the PDF format or an appendix; these files package its actual requirements for a file-only submission form. Private keys, API credentials, `.env`, build caches and deployment broadcast artifacts are excluded.

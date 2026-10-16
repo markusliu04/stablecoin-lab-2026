@@ -5,12 +5,10 @@ This file is **what you have to write**. The README tells you what the lab is; t
 Every exercise has one command that answers "am I done?". Red means not done, green means done.
 The starter tests under `test/exercises/` are **deliberately red** — that is not a bug report, that is your task.
 
-> **Reference-solution scope:** this copy is AI-assisted. Review the filled exercise code and
-> reference discussion drafts, then verify the test suites with `make test` (7 passed),
-> `make exercise` (29 passed), `make challenge` (2 passed), and unfiltered `forge test`
-> (38 passed, 0 failed). Both the required Ex3 local role-grant / unbacked-mint demonstration
-> and the Ex7 `UnstoppableVault` challenge are completed and verified locally.
-> No Tier 2 Sepolia testnet deployment or Etherscan source verification is claimed.
+> **Completion status:** verify with `make test` (7 passed), `make exercise` (29 passed),
+> `make challenge` (2 passed), and unfiltered `forge test` (38 passed, 0 failed).
+> Ex3 and Ex7 are completed locally. The three core contracts are deployed on Sepolia;
+> the README records addresses and the precise Etherscan verification classifications.
 
 ---
 

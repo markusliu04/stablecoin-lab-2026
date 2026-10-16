@@ -1,0 +1,41 @@
+{
+  "network": "Sepolia",
+  "chain_id": 11155111,
+  "block_number": 11928229,
+  "block_number_hex": "0xb602a5",
+  "deployer_admin": "0x00296F9fb632d058465Cf2f03F496F47237637C2",
+  "contracts": {
+    "MockUSDC": {
+      "address": "0xdB7bdC4faBE2c136896A061F905227567c5Cc307",
+      "tx_hash": "0x3f41943277c41796377c064cc8508c4caa1ddb3fb1d830ae07c0ced7626d81e6",
+      "gas_used": 3397437,
+      "etherscan_url": "https://sepolia.etherscan.io/address/0xdb7bdc4fabe2c136896a061f905227567c5cc307#code",
+      "verified": true,
+      "verification_match": "Similar Match"
+    },
+    "SimpleStablecoin": {
+      "address": "0x9Acfcc3d676c77E409E81Cf24d2766bEeEe66878",
+      "tx_hash": "0xe28ba26fc205ea702e6ca618d12faa68d35b4dea3a68bb92e06d8b3f359a0b23",
+      "gas_used": 6302575,
+      "etherscan_url": "https://sepolia.etherscan.io/address/0x9acfcc3d676c77e409e81cf24d2766beeee66878#code",
+      "verified": true,
+      "verification_match": "Similar Match"
+    },
+    "Vault": {
+      "address": "0xC940A20D69a12D8806C7d8928a99b41478f266E9",
+      "tx_hash": "0x8930288dd342d6bf44621056ee129757a85c4f15cc9e6e0dd4dffc206627b189",
+      "gas_used": 3047721,
+      "etherscan_url": "https://sepolia.etherscan.io/address/0xc940a20d69a12d8806c7d8928a99b41478f266e9#code",
+      "verified": true,
+      "verification_match": "Exact Match"
+    }
+  },
+  "role_grant": {
+    "function": "grantRole(bytes32,address)",
+    "role": "0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6",
+    "grantee": "0xC940A20D69a12D8806C7d8928a99b41478f266E9",
+    "tx_hash": "0xa95d12fe61ff189f09f81ffd19d7c2c3aff4097b56207b5e3d5d39777a5225fb",
+    "gas_used": 133511,
+    "etherscan_tx_url": "https://sepolia.etherscan.io/tx/0xa95d12fe61ff189f09f81ffd19d7c2c3aff4097b56207b5e3d5d39777a5225fb"
+  }
+}
