@@ -1,0 +1,22 @@
+{
+  "event": "command_execution",
+  "label": "EX3_STEP3_AUTHORIZED_MINT",
+  "cwd": "<repository>",
+  "command": [
+    "cast",
+    "send",
+    "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "mint(address,uint256)",
+    "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "1000000000000",
+    "--rpc-url",
+    "http://127.0.0.1:52965",
+    "--private-key",
+    "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
+  ],
+  "exit_status": 0,
+  "stdout": "\nblockHash            0x3c35cb6e1aca2faea32bae648bf7d180d5e8f620cd48f9196a7f9b84c9466002\nblockNumber          7\ncontractAddress      \ncumulativeGasUsed    56055\neffectiveGasPrice    458497742\nfrom                 0x70997970C51812dc3A010C7d01b50e0d17dc79C8\ngasUsed              56055\nlogs                 [{\"address\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\",\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"0x00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8\"],\"data\":\"0x000000000000000000000000000000000000000000000000000000e8d4a51000\",\"blockHash\":\"0x3c35cb6e1aca2faea32bae648bf7d180d5e8f620cd48f9196a7f9b84c9466002\",\"blockNumber\":\"0x7\",\"blockTimestamp\":\"0x6ad23516\",\"transactionHash\":\"0xf4da57bd322391ae2e4a5f236d1d874cac8202c9b21f92ea246cb232c1d2efd3\",\"transactionIndex\":\"0x0\",\"logIndex\":\"0x0\",\"removed\":false}]\nlogsBloom            0x00000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000800020000000000000000000800000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000001000000000000000000000000000000020000000000000000000000000000000000001000000000000800000000000000000\nroot                 \nstatus               1 (success)\ntransactionHash      0xf4da57bd322391ae2e4a5f236d1d874cac8202c9b21f92ea246cb232c1d2efd3\ntransactionIndex     0\ntype                 2\nblobGasPrice         \nblobGasUsed          \nto                   0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512\n",
+  "stderr": "",
+  "export_note": "Portable export: cwd normalized and environment_overrides omitted; command, literal stdout/stderr and exit status retained. Keys in cast commands are public Anvil test fixtures, not real credentials.",
+  "original_log_sha256": "b2b01b821095decf2c93b1c9d0083f9d5bacd658a79da6e2c1f1c487d6ecd6e5"
+}

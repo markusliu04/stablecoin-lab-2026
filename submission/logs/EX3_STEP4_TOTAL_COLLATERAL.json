@@ -1,0 +1,18 @@
+{
+  "event": "command_execution",
+  "label": "EX3_STEP4_TOTAL_COLLATERAL",
+  "cwd": "<repository>",
+  "command": [
+    "cast",
+    "call",
+    "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+    "totalCollateral()(uint256)",
+    "--rpc-url",
+    "http://127.0.0.1:52965"
+  ],
+  "exit_status": 0,
+  "stdout": "1000000000 [1e9]\n",
+  "stderr": "",
+  "export_note": "Portable export: cwd normalized and environment_overrides omitted; command, literal stdout/stderr and exit status retained. Keys in cast commands are public Anvil test fixtures, not real credentials.",
+  "original_log_sha256": "b13641f7827a812828f4a056bb236c800059a94834be85d3ceceefef49d77f6c"
+}

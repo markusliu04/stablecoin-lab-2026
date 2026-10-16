@@ -1,0 +1,22 @@
+{
+  "event": "command_execution",
+  "label": "EX3_STEP1_UNAUTHORIZED_MINT",
+  "cwd": "<repository>",
+  "command": [
+    "cast",
+    "send",
+    "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "mint(address,uint256)",
+    "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "1000000000000",
+    "--rpc-url",
+    "http://127.0.0.1:52965",
+    "--private-key",
+    "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
+  ],
+  "exit_status": 1,
+  "stdout": "",
+  "stderr": "Error: Failed to estimate gas: server returned an error response: error code 3: execution reverted: custom error 0xe2517d3f: 00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c89f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6, data: \"0xe2517d3f00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c89f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6\": AccessControlUnauthorizedAccount(0x70997970C51812dc3A010C7d01b50e0d17dc79C8, 0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6)\n",
+  "export_note": "Portable export: cwd normalized and environment_overrides omitted; command, literal stdout/stderr and exit status retained. Keys in cast commands are public Anvil test fixtures, not real credentials.",
+  "original_log_sha256": "f73d1871049f59e3475c5de2eabf15bbb1befae3da820d8a6aeb5e25978b3f61"
+}

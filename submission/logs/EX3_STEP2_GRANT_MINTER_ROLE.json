@@ -1,0 +1,22 @@
+{
+  "event": "command_execution",
+  "label": "EX3_STEP2_GRANT_MINTER_ROLE",
+  "cwd": "<repository>",
+  "command": [
+    "cast",
+    "send",
+    "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "grantRole(bytes32,address)",
+    "0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6",
+    "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "--rpc-url",
+    "http://127.0.0.1:52965",
+    "--private-key",
+    "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+  ],
+  "exit_status": 0,
+  "stdout": "\nblockHash            0xfb17e4b0481e55bcc3207481e7c84b37ad109a2abcac8dac78b0c75060e08b44\nblockNumber          6\ncontractAddress      \ncumulativeGasUsed    51491\neffectiveGasPrice    523740581\nfrom                 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\ngasUsed              51491\nlogs                 [{\"address\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\",\"topics\":[\"0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d\",\"0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6\",\"0x00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8\",\"0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266\"],\"data\":\"0x\",\"blockHash\":\"0xfb17e4b0481e55bcc3207481e7c84b37ad109a2abcac8dac78b0c75060e08b44\",\"blockNumber\":\"0x6\",\"blockTimestamp\":\"0x6ad23516\",\"transactionHash\":\"0x26e4c5e3c97431bf4d8f3447954defbb55295d666bdd47bbe66f9d65c0042289\",\"transactionIndex\":\"0x0\",\"logIndex\":\"0x0\",\"removed\":false}]\nlogsBloom            0x00000004000000000002000000000000000000000000000000000000000000000000000000000000000000000000004010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000100000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000200000000000001000001000002000000100000000000000000000000000000000000000000000000001000000000000800000000000000000\nroot                 \nstatus               1 (success)\ntransactionHash      0x26e4c5e3c97431bf4d8f3447954defbb55295d666bdd47bbe66f9d65c0042289\ntransactionIndex     0\ntype                 2\nblobGasPrice         \nblobGasUsed          \nto                   0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512\n",
+  "stderr": "",
+  "export_note": "Portable export: cwd normalized and environment_overrides omitted; command, literal stdout/stderr and exit status retained. Keys in cast commands are public Anvil test fixtures, not real credentials.",
+  "original_log_sha256": "aa8d8a000eafe0795ead7710009030c5212aac958951f09451570eaeb2d25a64"
+}

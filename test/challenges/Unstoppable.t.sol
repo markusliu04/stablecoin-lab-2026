@@ -92,8 +92,7 @@ contract UnstoppableChallenge is Test {
     ////////////////////////////////////////////////////////////////////////
     function test_unstoppable() public checkSolvedByPlayer {
         // Hint: you are holding 10 DVT. What assumption does the vault make about its own balance?
-        //
-        // TODO: your code goes here
+        token.transfer(address(vault), INITIAL_PLAYER_TOKEN_BALANCE);
     }
 
     ////////////////////////////////////////////////////////////////////////

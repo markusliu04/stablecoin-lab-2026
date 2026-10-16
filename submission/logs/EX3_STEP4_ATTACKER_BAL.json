@@ -1,0 +1,19 @@
+{
+  "event": "command_execution",
+  "label": "EX3_STEP4_ATTACKER_BAL",
+  "cwd": "<repository>",
+  "command": [
+    "cast",
+    "call",
+    "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "balanceOf(address)(uint256)",
+    "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "--rpc-url",
+    "http://127.0.0.1:52965"
+  ],
+  "exit_status": 0,
+  "stdout": "1000000000000 [1e12]\n",
+  "stderr": "",
+  "export_note": "Portable export: cwd normalized and environment_overrides omitted; command, literal stdout/stderr and exit status retained. Keys in cast commands are public Anvil test fixtures, not real credentials.",
+  "original_log_sha256": "f9817de95938a148ad56d749ba266041f66cbeab2d7953d9cd2c5c15d37adfb2"
+}

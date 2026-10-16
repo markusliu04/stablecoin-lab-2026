@@ -1,0 +1,31 @@
+{
+  "network": "disposable local Anvil",
+  "chain_id": 31337,
+  "rpc": "http://127.0.0.1:52965",
+  "USDC": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "SUSD": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+  "VAULT": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+  "admin": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "attacker": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+  "minter_role": "0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6",
+  "before_attack": {
+    "totalSupply": 1000000000,
+    "totalCollateral": 1000000000,
+    "attacker_sUSD": 0
+  },
+  "after_step1_unauthorized_mint": {
+    "reverted": true,
+    "totalSupply": 1000000000,
+    "totalCollateral": 1000000000,
+    "attacker_sUSD": 0
+  },
+  "after_step3_unbacked_mint": {
+    "totalSupply_raw": 1001000000000,
+    "totalSupply_display": "1001000000000 [1.001e12]",
+    "totalCollateral_raw": 1000000000,
+    "totalCollateral_display": "1000000000 [1e9]",
+    "attacker_sUSD_raw": 1000000000000,
+    "attacker_sUSD_display": "1000000000000 [1e12]",
+    "unbacked_deficit_raw": 1000000000000
+  }
+}

@@ -1,11 +1,41 @@
 # Lab 1 — How to Create a Stablecoin
 
+> **AI-assisted reference-solution copy.** Review the implementations and discussion drafts
+> before submitting, and disclose assistance according to your course rules. All local suites
+> pass: `make test` (7 passed), `make exercise` (29 passed), `make challenge` (2 passed), and
+> unfiltered `forge test` (38 passed, 0 failed). Both the required Ex3 local Anvil role-grant /
+> unbacked-mint demonstration (`totalSupply() >> totalCollateral()`) and the Ex7 `UnstoppableVault`
+> challenge (`test/challenges/Unstoppable.t.sol`) are completed and verified locally. Tier 2
+> Sepolia deployment and Etherscan source verification are not performed. This is a local
+> educational prototype, not an audited or production-ready stablecoin.
+
 In this lab you build a **fiat-collateralized stablecoin** from scratch: deposit collateral to mint, burn to redeem, fully backed at every moment.
 
 The core claim, up front:
 
 > A stablecoin's "stability" does not come from the ERC-20 code — it comes from the **mint-redeem loop**.
 > ERC-20 is only a bookkeeping format; anyone can write one in ten minutes. The real work is designing the loop and the permissions around it.
+
+---
+
+## Submission evidence — 16 October 2026
+
+- **Student repository:** [markusliu04/stablecoin-lab-2026](https://github.com/markusliu04/stablecoin-lab-2026).
+- Based on the [course starter](https://github.com/hgwoops/stablecoin-lab-2026/tree/971ae77107f750153208c495bb000673c9560403); completed Ex0–Ex6 and optional Ex7 locally.
+- [Submission report](submission/REPORT.md), [discussion answers and AI disclosure](STUDENT-QUESTIONS.md), [fresh independent test log](submission/logs/PREPUSH_FULL_SUITE.json), and [Ex3 readback](submission/ex3-demo-summary.json).
+- **Not completed:** Tier 2 Sepolia deployment / Etherscan verification. The rubric assigns this 20%; this submission does not claim that portion or full marks.
+
+### Full test suite — native Terminal screenshot
+
+![All 38 tests passing](submission/screenshots/native_macos_full_test_38_passed.png)
+
+### Ex3 — native Terminal screenshot
+
+![Local Anvil unbacked-mint readback](submission/screenshots/native_macos_ex3_depeg_readback.png)
+
+### Architecture diagram
+
+![Core loop and over-collateralized architecture](submission/screenshots/architecture_diagram.png)
 
 ---
 
@@ -51,7 +81,7 @@ export PATH="$PATH:$HOME/.foundry/bin"
 **Step 2. Get the code**
 
 ```bash
-git clone https://github.com/hgwoops/stablecoin-lab-2026 && cd stablecoin-lab-2026
+git clone https://github.com/markusliu04/stablecoin-lab-2026 && cd stablecoin-lab-2026
 ```
 
 Then go to **Verify** below.
@@ -64,7 +94,7 @@ PowerShell are not workarounds. The straightforward path is to run the lab on Gi
 servers from your browser. Nothing is installed locally, which also makes it the only
 option on locked-down corporate machines.
 
-1. Open <https://github.com/hgwoops/stablecoin-lab-2026>
+1. Open <https://github.com/markusliu04/stablecoin-lab-2026>
 2. Green **`Code`** button → **`Codespaces`** tab → **`Create codespace on main`**
 3. **The first launch takes 2–5 minutes**: it builds the environment from `.devcontainer/`,
    then automatically runs `make doctor` — you should see a row of `✓` in the terminal
@@ -103,7 +133,7 @@ All green means you can start. **If you cannot fix it, paste the entire `make do
 ```bash
 make doctor        # environment check — all green before you go on
 make test          # Ex0 checkpoint: core tests, should be all green (7 passed)
-make exercise      # the hands-on tasks; red right now — the red ones ARE your task list
+make exercise      # required exercise acceptance; the starter copy is deliberately red
 make anvil         # terminal A: start a local chain
 make deploy-anvil  # terminal B: deploy to it
 ```
@@ -125,17 +155,56 @@ where to look when you get stuck.
 | `src/SimpleStablecoin.sol` | **The stablecoin itself.** ERC-20 + `MINTER_ROLE` (who may mint) + `PAUSER_ROLE` (whether transfers are frozen) |
 | `src/Vault.sol` | **The loop.** Deposit collateral to mint 1:1; burn to take collateral back |
 
-The key invariant: **`vault.totalCollateral() == stable.totalSupply()`**
+### Architecture (Core 1:1 Loop & Ex5 Over-Collateralized System)
 
-As long as that equation holds, every coin is fully backed. The moment someone can mint out of
-thin air without collateral appearing, the equation breaks and the coin stops being stable.
+```mermaid
+flowchart LR
+    User["User / Anvil account"]
+    USDC["MockUSDC · 6 decimals<br/>unrestricted local faucet"]
+    Vault["Vault<br/>deposit / redeem"]
+    SUSD["SimpleStablecoin · 6 decimals<br/>mint / burn / pause"]
+    Admin["Deployment admin<br/>admin + minter + pauser"]
+    User -->|"faucet; approve Vault"| USDC
+    User -->|"deposit / redeem"| Vault
+    Vault -->|"transferFrom in; transfer out"| USDC
+    Vault -->|"mint to / burn from caller"| SUSD
+    Admin -->|"grant MINTER_ROLE to Vault"| SUSD
+    Admin -->|"pause / unpause; role management"| SUSD
+    SUSD -->|"user balance / totalSupply"| User
+```
 
-`script/Deploy.s.sol` wires all three together in a single command, and finishes by granting
-`MINTER_ROLE` to the vault — **skip that step and every deposit reverts**.
+```mermaid
+flowchart LR
+    Borrower["Borrower / Liquidator"]
+    WETH["MockWETH · 18 decimals<br/>faucet / approve"]
+    Feed["MockPriceFeed · 8 decimals<br/>latestRoundData / setPrice"]
+    OCVault["OverCollateralizedVault<br/>depositCollateral / redeemCollateral<br/>mintStable / repay / liquidate"]
+    SUSD2["SimpleStablecoin · 6 decimals<br/>mint / burn"]
+    Borrower -->|"faucet; approve OCVault"| WETH
+    Borrower -->|"depositCollateral / redeemCollateral / mintStable / liquidate"| OCVault
+    Feed -->|"8-decimal USD price"| OCVault
+    OCVault -->|"safeTransferFrom / safeTransfer"| WETH
+    OCVault -->|"mint / burn"| SUSD2
+```
 
-`src/exercises/` is a second system to practise on: `OverCollateralizedVault.sol`
-(over-collateralization + liquidation) together with `MockPriceFeed.sol` (a price feed you can
-move by hand). It contains four TODOs, which are the subject of Ex5.
+`script/Deploy.s.sol` deploys the 1:1 loop (`MockUSDC`, `SimpleStablecoin`, `Vault`) and grants `MINTER_ROLE` to `Vault` — **skip that step and every deposit reverts**. The separate Ex5 system combines `OverCollateralizedVault`, 18-decimal `MockWETH`, the 8-decimal `MockPriceFeed`, and 6-decimal `sUSD` (`collateralValue(amount) = amount * collateralPrice() / 1e20`, 150% minimum collateral ratio, <120% liquidation threshold, and 10% liquidation bonus capped at `collateralOf[user]`).
+
+#### Normal Loop (Ex1) vs. Simulated Role-Compromise & Vault Challenge (Ex3 & Ex7)
+
+1. **Normal 1:1 Mint/Redeem Loop (Ex1):**
+   - The quantity-backing invariant is **`vault.totalCollateral() >= stable.totalSupply()`**.
+   - On a clean local Anvil deployment, after `faucet(user, 1000e6)` and `approve(vault, 1000e6)`, calling `vault.deposit(1000e6)` (`make mint AMOUNT=1000000000`) sets `vault.totalCollateral() = 1000000000` (`1,000` mUSDC), `stable.totalSupply() = 1000000000` (`1,000` sUSD), and `stable.balanceOf(user) = 1000000000`. Calling `vault.redeem(1000e6)` burns `1000e6` sUSD from `msg.sender` and returns `1000e6` mUSDC, restoring `totalCollateral() == totalSupply() == 0`.
+2. **Local Role-Compromise & Unbacked-Mint Demonstration (Ex3):**
+   - Before holding `MINTER_ROLE`, an external account (`0x7099...79C8`) calling `stable.mint(attacker, 1000000000000)` reverts with `AccessControlUnauthorizedAccount(attacker, MINTER_ROLE)`; `totalSupply()` and `totalCollateral()` remain equal (`1000000000 [1e9]`).
+   - After the admin grants `MINTER_ROLE` to `attacker` (`grantRole(keccak256("MINTER_ROLE"), attacker)`), repeating `stable.mint(attacker, 1000000000000)` succeeds without passing through `Vault.deposit`.
+   - Readback confirms **`stable.totalSupply() = 1001000000000 [1.001e12]`** (`1,001,000` sUSD) while **`vault.totalCollateral() = 1000000000 [1e9]`** (`1,000` mUSDC). Because `SimpleStablecoin.mint` only checks `onlyRole(MINTER_ROLE)` and has no link to `Vault` reserve balances, a compromised or misassigned `MINTER_ROLE` breaks the quantity-backing guarantee without modifying a single line of contract code.
+3. **Vault Accounting Challenge (`UnstoppableVault`, Ex7):**
+   - `UnstoppableVault.totalAssets()` reads `IERC20(asset()).balanceOf(address(this))`, and `flashLoan()` requires `convertToShares(totalSupply()) != balanceBefore` not to hold (`InvalidBalance()`).
+   - In `test_unstoppable()`, transferring `INITIAL_PLAYER_TOKEN_BALANCE` (`10e18` DVT) directly to `address(vault)` increases `totalAssets()` to `1_000_010e18` without minting shares (`totalSupply() == 1_000_000e18`), permanently breaking the strict equality check in `flashLoan()`. When `monitor.checkFlashLoan(100e18)` runs in `_isSolved()`, `flashLoan()` reverts into the monitor's `catch` block, which emits `FlashLoanStatus(false)`, pauses the vault (`vault.paused() == true`), and transfers ownership back to `deployer`.
+
+These counts do not prove a dollar market peg or that redemption is currently available.
+`MockUSDC` has no real reserve value, and the core contract intentionally preserves the
+broad mint/burn permission and all-balance-change pause behavior discussed in Ex4.
 
 ---
 
@@ -143,12 +212,13 @@ move by hand). It contains four TODOs, which are the subject of Ex5.
 
 ### Tier 1 (required) — Ex0–Ex6 in `EXERCISES.md`
 
-1. **Ex0 Environment**: `make doctor` all green → `make test` all green
+1. **Ex0 Environment**: `make doctor` all green → `make test` all green (7 passed)
 2. **Ex1 The loop**: run it once from the command line — faucet mUSDC → `approve` → `deposit`
    to mint → `redeem` to get collateral back
 3. **Ex2 Decimals trap**: write the two `test_Ex2_*` tests in `test/exercises/01_LoopTasks.t.sol`
-4. **Ex3 Break the peg yourself**: use `cast` to grant `MINTER_ROLE` to an attacker and mint.
-   Submit a screenshot of `totalSupply()` far exceeding `totalCollateral()`
+4. **Ex3 Break the peg yourself**: use `cast` on local Anvil to verify non-minter revert, grant
+   `MINTER_ROLE` to the test attacker account, mint `1000000000000` raw sUSD, and record
+   `totalSupply() >> totalCollateral()` (`1001000000000 >> 1000000000`)
 5. **Ex4 Permissions and pausing**: write the five `test_Ex4_*` tests in the same file
 6. **Ex5 Over-collateralization + liquidation**: fill in the four TODOs in
    `src/exercises/OverCollateralizedVault.sol` until `test/exercises/03_OverCollateralTasks.t.sol`
@@ -157,7 +227,7 @@ move by hand). It contains four TODOs, which are the subject of Ex5.
 8. Answer the discussion questions in `STUDENT-QUESTIONS.md`
 
 > Tier 1 does **not** require deploying to a testnet — a local Anvil is enough.
-> The acceptance command for every exercise is `make exercise`; when you are done it should be all green.
+> Verify all test suites with `make test`, `make exercise`, `make challenge`, and `forge test`.
 
 ### Tier 2 (bonus)
 
@@ -189,9 +259,8 @@ Sepolia test ETH: <https://cloud.google.com/application/web3/faucet/ethereum/sep
 
 Pick one:
 
-- **Ex7 · Take the vault down**: `make challenge` (`test/challenges/Unstoppable.t.sol`, ported
-  from Damn Vulnerable DeFi v4). You hold 10 DVT; the goal is to stop the vault from offering
-  flash loans.
+- **Ex7 · Take the vault down (completed)**: `make challenge` (`test/challenges/Unstoppable.t.sol`,
+  ported from Damn Vulnerable DeFi v4). Both `test_assertInitialState` and `test_unstoppable` pass.
 - **Peg Stability Module (PSM)**: add a 1:1 swap channel against another stablecoin, so that
   arbitrageurs pull the price back to peg for you.
 - **Tighten the burn permission**: remove the centralization risk that the vault can burn
@@ -226,9 +295,10 @@ The vault has no minting right.
 Anvil starts from a clean state every time, so you must redeploy. To keep state, use
 `anvil --load-state demo-state.json`.
 
-**`make exercise` is all red**
-That is expected — the tests under `test/exercises/` are **deliberately red**; they are your task
-list. `make test` is the "everything is fine" checkpoint. Once you finish, `make exercise` goes green.
+**`make exercise` is all red in the starter copy**
+The original tests under `test/exercises/` are **deliberately red**; they are the task list.
+In this completed copy, `make test`, `make exercise`, `make challenge`, and unfiltered `forge test`
+all pass (38 passed, 0 failed).
 
 **`make exercise` hangs, or an invariant failure looks strange**
 Foundry stores invariant counterexamples in `cache/invariant/` and replays them on the next run.
@@ -247,8 +317,9 @@ To search for a fresh counterexample, `rm -rf cache/invariant` first.
 
 Submit:
 
-1. A link to your repo, with a screenshot of `forge test` passing
-2. Tier 2: Sepolia contract addresses + Etherscan links
+1. A link to your repo, with a screenshot of `forge test` passing (38 passed,
+   0 failed) and the Ex3 `totalSupply() >> totalCollateral()` readback
+2. Tier 2: Sepolia contract addresses + Etherscan links (if performing Tier 2)
 3. Your answers to the discussion questions in `STUDENT-QUESTIONS.md`
 4. An architecture diagram in your README — a photo of a hand drawing is fine
 

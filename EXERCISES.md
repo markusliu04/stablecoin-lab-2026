@@ -3,7 +3,14 @@
 This file is **what you have to write**. The README tells you what the lab is; this tells you what to do.
 
 Every exercise has one command that answers "am I done?". Red means not done, green means done.
-The tests under `test/exercises/` are **deliberately red** — that is not a bug report, that is your task.
+The starter tests under `test/exercises/` are **deliberately red** — that is not a bug report, that is your task.
+
+> **Reference-solution scope:** this copy is AI-assisted. Review the filled exercise code and
+> reference discussion drafts, then verify the test suites with `make test` (7 passed),
+> `make exercise` (29 passed), `make challenge` (2 passed), and unfiltered `forge test`
+> (38 passed, 0 failed). Both the required Ex3 local role-grant / unbacked-mint demonstration
+> and the Ex7 `UnstoppableVault` challenge are completed and verified locally.
+> No Tier 2 Sepolia testnet deployment or Etherscan source verification is claimed.
 
 ---
 
@@ -12,13 +19,13 @@ The tests under `test/exercises/` are **deliberately red** — that is not a bug
 | # | What you will do | Acceptance command | Where to look if stuck |
 |---|---|---|---|
 | Ex0 | Set up the environment, get the core tests passing | `make test` (7 green) | `README.md` "1. Setup" |
-| Ex1 | Walk the mint/redeem loop once on the command line | `make mint` then `make balance` | `README.md` "2. Quick start", the Ex1 commands below |
+| Ex1 | Walk the mint/redeem loop once on the command line | faucet → approve → `make mint` → redeem → readback | `README.md` "2. Quick start", the Ex1 commands below |
 | Ex2 | Catch the 6-vs-18-decimal trap in a test | the two `Ex2` tests under `01_*` in `make exercise` | the Ex2 "hint" below, `test/exercises/01_LoopTasks.t.sol` |
-| Ex3 | Break a stablecoin's peg with your own hands | a screenshot of `supply >> collateral` | the four Ex3 commands below |
+| Ex3 | Break a stablecoin's peg with your own hands | `totalSupply() >> totalCollateral()` on local Anvil | the four Ex3 commands below |
 | Ex4 | Write tests for permissions and pausing | the five `Ex4` tests under `01_*` | `STUDENT-QUESTIONS.md` A1/B1, `test/exercises/01_LoopTasks.t.sol` |
 | Ex5 | Implement the over-collateralized vault and liquidation | all of `03_*` green | `src/exercises/OverCollateralizedVault.sol`, the decimals table below |
 | Ex6 | Write invariant tests (the machine calls things at random and hunts for a counterexample) | all of `02_*` green | `test/exercises/02_InvariantTasks.t.sol`, the Ex6 "hint" below |
-| Ex7 | Make a real vault stop serving | `make challenge` (**red** until you solve it) | `test/challenges/Unstoppable.t.sol` |
+| Ex7 | Make a real vault stop serving | `make challenge` (2 green) | `test/challenges/Unstoppable.t.sol` |
 
 The deck has three reference pages worth keeping open:
 P18 decimals, P25 the invariant handler, P27 if you are stuck look here.
@@ -44,16 +51,62 @@ Track B (Codespaces) installs nothing locally.
 
 ## Ex1 · Walk the loop once
 
+Use a fresh local Anvil and account 0 for this walkthrough. All keys below are Anvil's
+published test fixtures, **never a wallet for real funds**. `make mint` only calls
+`Vault.deposit`: it neither faucets mUSDC nor approves collateral for you.
+
 ```bash
-make anvil                  # terminal A, leave it running
-make deploy-anvil           # terminal B
-export VAULT=... SUSD=... USDC=...   # the three addresses deploy printed
-make mint AMOUNT=1000000000
-make balance TO=<your address>
+# Terminal A: leave the local chain running.
+make anvil
+
+# Terminal B: deploy the core loop and copy the printed addresses.
+make deploy-anvil
+export RPC=http://127.0.0.1:8545
+export USDC="<MockUSDC_address>" SUSD="<SimpleStablecoin_address>" VAULT="<Vault_address>"
+
+# Anvil's public default account 0; matches deploy-anvil and make mint.
+export ANVIL_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+export USER=$(cast wallet address --private-key "$ANVIL_KEY")
+export AMOUNT=1000000000   # 1,000 tokens at 6 decimals
+
+# 1. Receive local collateral, then authorize the Vault to take it.
+cast send "$USDC" "faucet(address,uint256)" "$USER" "$AMOUNT" \
+  --rpc-url "$RPC" --private-key "$ANVIL_KEY"
+cast send "$USDC" "approve(address,uint256)" "$VAULT" "$AMOUNT" \
+  --rpc-url "$RPC" --private-key "$ANVIL_KEY"
+
+# 2. Deposit collateral; the Vault mints the same number of sUSD units.
+make mint AMOUNT="$AMOUNT"
+make balance TO="$USER"
+cast call "$SUSD" "totalSupply()(uint256)" --rpc-url "$RPC"
+cast call "$VAULT" "totalCollateral()(uint256)" --rpc-url "$RPC"
+
+# 3. Burn your sUSD and recover collateral. The CURRENT core needs no sUSD allowance.
+cast send "$VAULT" "redeem(uint256)" "$AMOUNT" \
+  --rpc-url "$RPC" --private-key "$ANVIL_KEY"
+
+# 4. Read the final state, not just the transaction receipt.
+make balance TO="$USER"
+cast call "$SUSD" "totalSupply()(uint256)" --rpc-url "$RPC"
+cast call "$VAULT" "totalCollateral()(uint256)" --rpc-url "$RPC"
+cast call "$USDC" "balanceOf(address)(uint256)" "$USER" --rpc-url "$RPC"
 ```
 
-Look at three numbers: `totalSupply()`, `totalCollateral()`, `balanceOf(you)`.
-**They must be equal.** That is the whole secret of the system.
+Replace each `<..._address>` placeholder before running; use the addresses from this chain,
+not a previous deployment. The Makefile fixes RPC and signer to the values above, unless
+overridden explicitly on its command line. This walkthrough does not use `.env` or Sepolia.
+
+**Expected state on a fresh deployment with this one depositor** (not a fabricated run log):
+
+| Checkpoint | User sUSD | Total sUSD supply | Vault mUSDC | User mUSDC |
+|---|---:|---:|---:|---:|
+| After faucet, before deposit | 0 | 0 | 0 | 1,000,000,000 |
+| After deposit | 1,000,000,000 | 1,000,000,000 | 1,000,000,000 | 0 |
+| After full redeem | 0 | 0 | 0 | 1,000,000,000 |
+
+All numbers are smallest units. With multiple holders, an individual `balanceOf(user)`
+need not equal global supply. Direct donations can make collateral greater than supply.
+Save your own commands, receipts, and readbacks; expected values alone are not execution evidence.
 
 ---
 
@@ -78,20 +131,34 @@ The second one has no expected answer. Run it, read the numbers carefully, then 
 ## Ex3 · Break the peg by hand (command line, no tests)
 
 ```bash
+export ATTACK_KEY=0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
+export ATTACKER=$(cast wallet address --private-key "$ATTACK_KEY")
+
 # 1. The attacker (no MINTER_ROLE) mints for themselves -- this must fail
-cast send $SUSD "mint(address,uint256)" $ATTACKER 1000000000000 \
-  --rpc-url $RPC --private-key $ATTACK_KEY
+cast send "$SUSD" "mint(address,uint256)" "$ATTACKER" 1000000000000 \
+  --rpc-url "$RPC" --private-key "$ATTACK_KEY"
 
 # 2. Now grant MINTER_ROLE to the attacker (simulating a leaked key / insider / bribe)
-cast send $SUSD "grantRole(bytes32,address)" \
-  $(cast keccak "MINTER_ROLE") $ATTACKER --rpc-url $RPC --private-key $ANVIL_KEY
+cast send "$SUSD" "grantRole(bytes32,address)" \
+  $(cast keccak "MINTER_ROLE") "$ATTACKER" --rpc-url "$RPC" --private-key "$ANVIL_KEY"
 
 # 3. Mint again -- this time it succeeds
+cast send "$SUSD" "mint(address,uint256)" "$ATTACKER" 1000000000000 \
+  --rpc-url "$RPC" --private-key "$ATTACK_KEY"
+
 # 4. Read totalSupply() and totalCollateral(), screenshot both numbers
+cast call "$SUSD" "totalSupply()(uint256)" --rpc-url "$RPC"
+cast call "$VAULT" "totalCollateral()(uint256)" --rpc-url "$RPC"
 ```
 
 Deliverable: one screenshot where `totalSupply()` is far greater than `totalCollateral()`.
 **That is a depeg.** Not a line of code changed, and the peg is gone.
+
+**Observed state on a local Anvil run (after an honest `1,000e6` deposit followed by Ex3 steps 1–4):**
+- Step 1 (`mint` without `MINTER_ROLE`): reverted with `AccessControlUnauthorizedAccount(0x70997970C51812dc3A010C7d01b50e0d17dc79C8, 0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6)`; `totalSupply() = 1000000000 [1e9]`, `totalCollateral() = 1000000000 [1e9]`.
+- Step 2 (`grantRole(MINTER_ROLE, attacker)`): succeeded (`tx 0x13e85a8a...`, block 5).
+- Step 3 (`mint(attacker, 1000000000000)`): succeeded (`tx 0x13a076f9...`, block 6).
+- Step 4 readbacks: `totalSupply() = 1001000000000 [1.001e12]` (`1,001,000` sUSD) vs. `totalCollateral() = 1000000000 [1e9]` (`1,000` mUSDC), leaving an unbacked deficit of `1000000000000` raw units (`1,000,000` sUSD).
 
 ---
 
@@ -177,7 +244,7 @@ the closest thing in the lab to a real security audit.
 ## Ex7 · Make a real vault stop serving
 
 ```bash
-make challenge     # should be red right now -- that is the puzzle, not a bug
+make challenge     # acceptance: 2 passed (test_assertInitialState and test_unstoppable)
 ```
 
 The material is in `test/challenges/Unstoppable.t.sol`, ported from Damn Vulnerable DeFi v4.
@@ -186,6 +253,8 @@ You are holding 10 DVT, and the goal is to make the vault **stop offering flash 
 The only function you need to change is `test_unstoppable()`. The hint is already in there:
 
 > What assumption does the vault make about its own balance?
+
+Transferring `INITIAL_PLAYER_TOKEN_BALANCE` directly to `address(vault)` causes `totalAssets()` (`IERC20(asset()).balanceOf(address(this))`) to exceed `convertToShares(totalSupply())`, triggering `InvalidBalance()` inside `flashLoan()`, so `UnstoppableMonitor.checkFlashLoan` emits `FlashLoanStatus(false)`, pauses the vault, and returns ownership to `deployer`.
 
 ---
 
